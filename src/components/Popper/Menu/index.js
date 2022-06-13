@@ -8,7 +8,7 @@ import Header from './Header';
 
 const cx = classNames.bind(styles);
 
-export default function Menu({ children, items }) {
+export default function Menu({ children, items, onChange }) {
   const [history, setHistory] = useState([{ data: items }]);
   const current = history[history.length - 1];
 
@@ -22,6 +22,8 @@ export default function Menu({ children, items }) {
           onClick={() => {
             if (isParent) {
               setHistory((prev) => [...prev, item.children]);
+            } else {
+              onChange(item);
             }
           }}
         />
@@ -31,10 +33,10 @@ export default function Menu({ children, items }) {
 
   return (
     <Tippy
-      visible
       interactive
       placement="bottom-end"
       delay={[0, 700]}
+      offset={[12, 8]}
       render={(attrs) => (
         <div className={cx('menu-list')} tabIndex={-1} {...attrs}>
           <PopperWrapper className={cx('menu-popper')}>
@@ -45,6 +47,7 @@ export default function Menu({ children, items }) {
           </PopperWrapper>
         </div>
       )}
+      onHide={() => setHistory((prev) => prev.slice(0, 1))}
     >
       {children}
     </Tippy>
