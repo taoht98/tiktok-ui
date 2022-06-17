@@ -7,6 +7,7 @@ import 'tippy.js/dist/tippy.css';
 import AccountItem from '~/components/AccountItem';
 import { SearchIcon } from '~/components/Icons';
 import { Wrapper as PopperWrapper } from '~/components/Popper';
+import { useDebounce } from '~/hooks';
 import styles from './Search.module.scss';
 
 const cx = classNames.bind(styles);
@@ -15,14 +16,27 @@ export default function Search() {
   const [searchValue, setSearchValue] = useState('');
   const [searchResult, setSearchResult] = useState([]);
   const [showResult, setShowResult] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const debounced = useDebounce(searchValue, 500);
 
   const inputRef = useRef();
 
   useEffect(() => {
-    setTimeout(() => {
+    if (!debounced.trim()) {
       setSearchResult([]);
-    }, 0);
-  }, []);
+      return;
+    }
+    setLoading(true);
+
+    fetch(`https://tiktok.fullstack.edu.vn/api/users/search?q=${encodeURIComponent(debounced)}&type=less`)
+      .then((res) => res.json())
+      .then((res) => {
+        setSearchResult(res.data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [debounced]);
 
   const handleClear = () => {
     setSearchValue('');
@@ -41,9 +55,9 @@ export default function Search() {
         <div className={cx('search-result')} tabIndex={-1} {...attrs}>
           <PopperWrapper>
             <h4 className={cx('search-title')}>Accounts</h4>
-            <AccountItem />
-            <AccountItem />
-            <AccountItem />
+            {searchResult.map((result) => (
+              <AccountItem key={result.id} data={result} />
+            ))}
           </PopperWrapper>
         </div>
       )}
@@ -58,12 +72,12 @@ export default function Search() {
           onChange={(e) => setSearchValue(e.target.value)}
           onFocus={() => setShowResult(true)}
         />
-        {!!searchValue && (
+        {!!searchValue && !loading && (
           <button onClick={handleClear}>
             <FontAwesomeIcon className={cx('clear')} icon={faCircleXmark} />
           </button>
         )}
-        <FontAwesomeIcon className={cx('loading')} icon={faSpinner} />
+        {loading && <FontAwesomeIcon className={cx('loading')} icon={faSpinner} />}
 
         <button className={cx('search-btn')}>
           <SearchIcon />
