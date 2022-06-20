@@ -8,7 +8,7 @@ import Header from './Header';
 
 const cx = classNames.bind(styles);
 
-export default function Menu({ children, items,hideOnClick = false, onChange }) {
+export default function Menu({ children, items, hideOnClick = false, onChange }) {
   const [history, setHistory] = useState([{ data: items }]);
   const current = history[history.length - 1];
 
@@ -44,7 +44,7 @@ export default function Menu({ children, items,hideOnClick = false, onChange }) 
             {history.length > 1 && (
               <Header title="Language" onBack={() => setHistory((prev) => prev.slice(0, prev.length - 1))} />
             )}
-            {renderItems()}
+            <div className={cx('menu-body')}>{renderItems()}</div>
           </PopperWrapper>
         </div>
       )}
